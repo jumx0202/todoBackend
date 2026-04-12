@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: todoBackend
+server:
+  port: 8080
