@@ -6,16 +6,15 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
     private final ObjectMapper om = new ObjectMapper();
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) { this.jwtUtil = jwtUtil; }
 
     private static final List<String> WHITE = List.of("/api/auth/register","/api/auth/login");
 

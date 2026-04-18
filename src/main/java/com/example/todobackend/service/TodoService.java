@@ -23,7 +23,16 @@ public class TodoService {
     public Result<Page<Todo>> getTodos(Integer userId, String status, Integer categoryId,
                                        String keyword, Pageable pageable) {
         Page<Todo> page;
-        if (keyword != null && !keyword.isBlank())
+        if (userId == null) {
+            if (keyword != null && !keyword.isBlank())
+                page = todoRepository.findByTitleContaining(keyword, pageable);
+            else if (categoryId != null)
+                page = todoRepository.findByCategoryId(categoryId, pageable);
+            else if (status != null && !status.isBlank())
+                page = todoRepository.findByStatus(status, pageable);
+            else
+                page = todoRepository.findAll(pageable);
+        } else if (keyword != null && !keyword.isBlank())
             page = todoRepository.findByUserIdAndTitleContaining(userId, keyword, pageable);
         else if (categoryId != null)
             page = todoRepository.findByUserIdAndCategoryId(userId, categoryId, pageable);
@@ -67,7 +76,7 @@ public class TodoService {
     private Todo findByIdAndUser(Integer todoId, Integer userId) {
         Todo t = todoRepository.findById(todoId)
                 .orElseThrow(() -> new BusinessException(404, "待办不存在"));
-        if (!t.getUserId().equals(userId))
+        if (userId != null && !java.util.Objects.equals(t.getUserId(), userId))
             throw new BusinessException(403, "无权访问此待办");
         return t;
     }
@@ -85,8 +94,13 @@ public class TodoService {
         if (ids == null || ids.isEmpty()) return new HashSet<>();
         Set<Category> cats = new HashSet<>();
         for (Integer cid : ids) {
-            cats.add(categoryRepository.findByIdAndUserId(cid, userId)
-                    .orElseThrow(() -> new BusinessException("分类不存在：id=" + cid)));
+            if (userId != null) {
+                cats.add(categoryRepository.findByIdAndUserId(cid, userId)
+                        .orElseThrow(() -> new BusinessException("分类不存在：id=" + cid)));
+            } else {
+                cats.add(categoryRepository.findById(cid)
+                        .orElseThrow(() -> new BusinessException("分类不存在：id=" + cid)));
+            }
         }
         return cats;
     }

@@ -28,7 +28,7 @@ public class AuthService {
         u.setPassword(encoder.encode(req.getPassword()));
         u.setEmail(req.getEmail());
         userRepository.save(u);
-        return Result.ok("注册成功");
+        return Result.ok();
     }
 
     public Result<LoginResponse> login(LoginRequest req) {

@@ -14,10 +14,14 @@ import java.util.List;
 public interface TodoRepository extends JpaRepository<Todo, Integer> {
     Page<Todo> findByUserId(Integer userId, Pageable pageable);
     Page<Todo> findByUserIdAndStatus(Integer userId, String status, Pageable pageable);
-    @Query("SELECT t FROM Todo t WHERE t.userId = :userId AND t.categories.id = :categoryId")
+    @Query("SELECT t FROM Todo t JOIN t.categories c WHERE t.userId = :userId AND c.id = :categoryId")
     Page<Todo> findByUserIdAndCategoryId(@Param("userId") Integer userId,
-                                          @Param("categoryId") Integer categoryId, Pageable pageable);
+                                         @Param("categoryId") Integer categoryId, Pageable pageable);
+    @Query("SELECT t FROM Todo t JOIN t.categories c WHERE c.id = :categoryId")
+    Page<Todo> findByCategoryId(@Param("categoryId") Integer categoryId, Pageable pageable);
     Page<Todo> findByUserIdAndTitleContaining(Integer userId, String keyword, Pageable pageable);
+    Page<Todo> findByTitleContaining(String keyword, Pageable pageable);
+    Page<Todo> findByStatus(String status, Pageable pageable);
     @Query("SELECT t FROM Todo t WHERE t.remindAt <= :now AND t.isReminded = 0")
     List<Todo> findRemindersDue(@Param("now") LocalDateTime now);
     @Query("SELECT t FROM Todo t WHERE t.repeatRule IS NOT NULL")

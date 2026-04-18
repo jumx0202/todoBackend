@@ -14,7 +14,7 @@ public class CategoryService {
     @Autowired private CategoryRepository categoryRepository;
 
     public Result<List<Category>> getCategories(Integer userId) {
-        return Result.ok(categoryRepository.findByUserId(userId));
+        return Result.ok(userId == null ? categoryRepository.findAll() : categoryRepository.findByUserId(userId));
     }
 
     public Result<Category> createCategory(Integer userId, CategoryRequest req) {
@@ -26,16 +26,22 @@ public class CategoryService {
     }
 
     public Result<Category> updateCategory(Integer userId, Integer id, CategoryRequest req) {
-        Category c = categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new BusinessException(404, "分类不存在"));
-        if (req.getName() != null) c.setName(req.getName());
-        if (req.getColor() != null) c.setColor(req.getColor());
-        return Result.ok(categoryRepository.save(c));
+        Category cat = userId != null
+                ? categoryRepository.findByIdAndUserId(id, userId).orElseThrow(() -> new BusinessException(404, "分类不存在"))
+                : categoryRepository.findById(id).orElseThrow(() -> new BusinessException(404, "分类不存在"));
+        if (req.getName() != null) cat.setName(req.getName());
+        if (req.getColor() != null) cat.setColor(req.getColor());
+        return Result.ok(categoryRepository.save(cat));
     }
 
     public Result<Void> deleteCategory(Integer userId, Integer id) {
-        categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new BusinessException(404, "分类不存在"));
+        if (userId != null) {
+            categoryRepository.findByIdAndUserId(id, userId)
+                    .orElseThrow(() -> new BusinessException(404, "分类不存在"));
+        } else {
+            categoryRepository.findById(id)
+                    .orElseThrow(() -> new BusinessException(404, "分类不存在"));
+        }
         categoryRepository.deleteById(id);
         return Result.ok();
     }
